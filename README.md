@@ -1,61 +1,66 @@
 # 🤖 n8n AI Workflow Builder (v1)
 
-Este projeto é um **MVP (v1)** de um construtor de automações utilizando IA, integrado ao n8n.
+Este projeto é um **MVP (v1)** de um construtor de automações com IA, integrado ao n8n, com interface conversacional (chat).
 
-A ideia é simples:
-
-> O usuário responde algumas perguntas → a IA interpreta → o sistema gera automaticamente um workflow no n8n.
+> O usuário conversa com a aplicação → responde perguntas → o sistema gera automaticamente um workflow no n8n.
 
 ---
 
 ## 🚀 Visão do Projeto
 
-Este projeto combina:
+O objetivo é construir um sistema onde automações são criadas a partir de linguagem natural, evoluindo para algo similar a um **Zapier com IA**.
 
-* Automação com o n8n
-* IA via Groq
-* Backend simples em Python
+Nesta versão, já temos:
 
-Objetivo:
-
-> Criar uma base para um “Zapier com IA”, onde fluxos são gerados automaticamente a partir de linguagem natural.
-
----
-
-## ⚠️ Status atual (v1)
-
-Esta é a versão inicial do projeto, com algumas limitações:
-
-* Fluxos ainda são simples (Webhook + HTTP Request)
-* IA não gera workflows completos (usa template fixo)
-* Sem interface gráfica (CLI apenas)
-* Sem validação avançada de fluxos
-
-👉 Mesmo assim, já é um MVP funcional.
+* Interface em formato de chatbot 💬
+* Backend em API
+* Integração com n8n
+* Criação automática de workflows
 
 ---
 
 ## 🧠 Como funciona
 
-1. Usuário responde perguntas no terminal:
+1. O usuário interage com o chat (frontend)
+2. O sistema faz perguntas guiadas:
 
-   * Tipo de gatilho
+   * Gatilho
    * Ação
    * URL
+3. O backend processa os dados
+4. Um workflow válido é montado via template
+5. O workflow é enviado via API para o n8n
+6. O fluxo aparece automaticamente no painel do n8n
 
-2. IA interpreta (via Groq)
+---
 
-3. Backend monta um workflow válido
+## ⚠️ Status atual (v1)
 
-4. Workflow é enviado via API para o n8n
+* Fluxos simples (Webhook → HTTP Request)
+* IA ainda não controla toda a estrutura (usa template fixo)
+* Sem persistência de dados
+* Sem autenticação no frontend
 
-5. O fluxo aparece automaticamente no n8n
+👉 Foco total em validar a ideia
+
+---
+
+## 🏗️ Arquitetura
+
+```text
+Frontend (HTML + JS - Chat)
+        ↓
+Backend (FastAPI)
+        ↓
+n8n (local via Docker)
+```
 
 ---
 
 ## 📦 Tecnologias utilizadas
 
 * Python 3.10+
+* FastAPI
 * requests
 * python-dotenv
 * Docker
@@ -66,23 +71,23 @@ Esta é a versão inicial do projeto, com algumas limitações:
 
 ## ⚙️ Pré-requisitos
 
-Antes de rodar, você precisa ter instalado:
-
-* Docker
+* Docker instalado
 * Python 3.10+
-* Conta no Groq (para API Key)
+* Conta no Groq (API Key)
 
 ---
 
 ## 🐳 Subindo o n8n
 
-### 1. Crie a pasta de dados:
+### 1. Crie a pasta:
 
 ```bash
 mkdir n8n_data
 ```
 
-### 2. Crie o arquivo `docker-compose.yml`:
+---
+
+### 2. docker-compose.yml
 
 ```yaml
 version: "3.8"
@@ -92,37 +97,35 @@ services:
     image: n8nio/n8n
     ports:
       - "5678:5678"
-    environment:
-      - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER=admin
-      - N8N_BASIC_AUTH_PASSWORD=admin
     volumes:
       - ./n8n_data:/home/node/.n8n
 ```
 
-### 3. Suba o container:
+---
+
+### 3. Suba o serviço
 
 ```bash
 docker compose up
 ```
 
-### 4. Acesse:
+---
 
-```
+### 4. Acesse
+
 http://localhost:5678
-```
 
-Crie o usuário inicial quando solicitado.
+Crie o usuário inicial.
 
 ---
 
-## 🔑 Configuração da API Key do n8n
+## 🔑 Configuração do n8n
 
 1. Vá em:
 
-   ```
-   Settings → API Keys
-   ```
+```
+Settings → API Keys
+```
 
 2. Gere uma API Key
 
@@ -130,17 +133,17 @@ Crie o usuário inicial quando solicitado.
 
 ## 🔐 Configuração do projeto
 
-Crie um arquivo `.env`:
+Crie um `.env` na raiz:
 
 ```env
-GROQ_API_KEY=sua_api_key_groq
-N8N_API_KEY=sua_api_key_n8n
+GROQ_API_KEY=sua_key_groq
+N8N_API_KEY=sua_key_n8n
 N8N_URL=http://localhost:5678/api/v1/workflows
 ```
 
 ---
 
-## 📥 Instalação das dependências
+## 📥 Instalação
 
 ```bash
 pip install -r requirements.txt
@@ -148,67 +151,105 @@ pip install -r requirements.txt
 
 ---
 
-## ▶️ Como rodar o projeto
+## ▶️ Rodando o backend
 
 ```bash
-python main.py
+uvicorn api:app --reload
+```
+
+Acesse:
+
+```
+http://localhost:8000/docs
 ```
 
 ---
 
-## 🧪 Exemplo de uso
+## 🌐 Rodando o frontend
 
-Você verá perguntas como:
-
-```text
-Qual o gatilho? (webhook/cron):
-O que deseja fazer? (ex: chamar API):
-URL da API:
+```bash
+python -m http.server 3000
 ```
 
-Exemplo:
+Acesse:
 
-```text
-webhook
-chamar API
-https://jsonplaceholder.typicode.com/posts/1
 ```
+http://localhost:3000
+```
+
+---
+
+## 💬 Como usar
+
+1. Abra o frontend
+2. Interaja com o chat
+3. Responda as perguntas
+4. Aguarde a geração
 
 ---
 
 ## ✅ Resultado esperado
 
-* Um workflow será criado automaticamente no n8n
-* Ele aparecerá no dashboard
+* Workflow criado automaticamente no n8n
+* Visível no painel
 * Pronto para execução
+
+---
+
+## ⚠️ Problemas comuns
+
+### ❌ CORS bloqueado
+
+👉 Solução: habilitar CORS no FastAPI
+
+---
+
+### ❌ `N8N_URL = None`
+
+👉 Solução: garantir `load_dotenv()`
+
+---
+
+### ❌ Erro de API Key
+
+👉 Verificar `.env`
+
+---
+
+### ❌ n8n não aceita request
+
+👉 Conferir:
+
+```
+/api/v1/workflows ou /rest/workflows
+```
 
 ---
 
 ## 🔥 Próximos passos (v2)
 
-Melhorias planejadas:
-
-* Interface web (React)
-* Mais tipos de nodes (IF, banco de dados, email)
-* Templates dinâmicos
-* Validação automática de workflows
-* Melhor uso da IA (decisão de fluxo)
+* Chat com IA real (não só steps fixos)
+* Suporte a múltiplos tipos de workflow
+* Interface mais robusta (React)
+* Preview visual do fluxo
+* Persistência de histórico
+* Deploy em cloud
 
 ---
 
 ## 💡 Ideia futura
 
-Transformar isso em:
+Transformar em:
 
-> Uma plataforma de automação inteligente (tipo Zapier + IA)
+> Plataforma de automação inteligente baseada em IA
 
 ---
 
-## 📌 Observações importantes
+## 📌 Observações
 
-* A IA ainda não gera JSON perfeito → usamos templates
-* Algumas versões do n8n exigem API Key (não Basic Auth)
-* Evite rodar dentro de pastas sincronizadas (ex: OneDrive)
+* Evite usar pastas com OneDrive (problemas de permissão)
+* Não versionar `.env`
+* Este projeto é um protótipo funcional
 
 ---
 
