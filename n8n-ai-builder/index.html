@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Workflow Builder</title>
+
+  <style>
+    body {
+      background: #0f172a;
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      color: #e2e8f0;
+    }
+
+    .chat-container {
+      width: 400px;
+      height: 600px;
+      background: #111827;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      overflow: hidden;
+    }
+
+    .chat-header {
+      padding: 15px;
+      background: #020617;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+    }
+
+    .message {
+      margin-bottom: 10px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      max-width: 75%;
+    }
+
+    .bot {
+      background: #1e293b;
+      align-self: flex-start;
+    }
+
+    .user {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      align-self: flex-end;
+      color: white;
+    }
+
+    .chat-input {
+      display: flex;
+      border-top: 1px solid #374151;
+    }
+
+    input {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: #020617;
+      color: white;
+      outline: none;
+    }
+
+    button {
+      padding: 12px;
+      border: none;
+      background: #6366f1;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #4f46e5;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="chat-container">
+  <div class="chat-header">🤖 AI Workflow Builder</div>
+
+  <div class="chat-messages" id="chat"></div>
+
+  <div class="chat-input">
+    <input id="input" placeholder="Digite sua resposta..." />
+    <button onclick="send()">Enviar</button>
+  </div>
+</div>
+
+<script>
+const chat = document.getElementById("chat")
+
+const steps = [
+  { key: "trigger", question: "Qual será o gatilho? (webhook ou cron)" },
+  { key: "action", question: "O que deseja fazer? (ex: chamar API)" },
+  { key: "url", question: "Qual a URL da API?" }
+]
+
+let currentStep = 0
+let answers = {}
+
+function addMessage(text, type) {
+  const msg = document.createElement("div")
+  msg.className = "message " + type
+  msg.innerText = text
+  chat.appendChild(msg)
+  chat.scrollTop = chat.scrollHeight
+}
+
+function askNext() {
+  if (currentStep < steps.length) {
+    addMessage(steps[currentStep].question, "bot")
+  } else {
+    generateWorkflow()
+  }
+}
+
+async function send() {
+  const input = document.getElementById("input")
+  const value = input.value
+
+  if (!value) return
+
+  addMessage(value, "user")
+
+  answers[steps[currentStep].key] = value
+  input.value = ""
+  currentStep++
+
+  setTimeout(askNext, 500)
+}
+
+async function generateWorkflow() {
+  addMessage("Gerando seu workflow...", "bot")
+
+  const res = await fetch("http://localhost:8000/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(answers)
+  })
+
+  await res.json()
+
+  addMessage("✅ Workflow criado no n8n!", "bot")
+}
+
+// inicia conversa
+askNext()
+</script>
+
+</body>
+</html>
